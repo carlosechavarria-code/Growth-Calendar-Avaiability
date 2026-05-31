@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Disponibilidad · Equipo Handle</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=Spline+Sans:wght@400;500;600&family=Spline+Sans+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0e100f;--panel:#161a18;--panel-2:#1d2320;--line:#2a322e;--ink:#eef2ee;--muted:#8b968f;
+    --rafa:#e8694a;--rafa-soft:rgba(232,105,74,.16);
+    --mire:#5bb9a6;--mire-soft:rgba(91,185,166,.16);
+    --rami:#d7a13b;--rami-soft:rgba(215,161,59,.16);
+    --radius:14px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:var(--bg);color:var(--ink);font-family:'Spline Sans',sans-serif;-webkit-font-smoothing:antialiased}
+  body{
+    min-height:100vh;
+    background:
+      radial-gradient(900px 500px at 85% -10%, rgba(91,185,166,.10), transparent 60%),
+      radial-gradient(700px 500px at -5% 110%, rgba(232,105,74,.10), transparent 55%),
+      var(--bg);
+    padding:30px clamp(16px,4vw,56px) 60px;
+  }
+  .wrap{max-width:1180px;margin:0 auto}
+
+  header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:18px;margin-bottom:20px}
+  .eyebrow{font-family:'Spline Sans Mono',monospace;letter-spacing:.28em;text-transform:uppercase;font-size:11px;color:var(--muted);margin-bottom:8px}
+  h1{font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:clamp(28px,4.2vw,44px);line-height:.98;letter-spacing:-.02em}
+  h1 .dim{color:var(--muted);font-weight:600}
+  .sub{color:var(--muted);font-size:13.5px;margin-top:10px;max-width:44ch}
+  .controls{display:flex;flex-direction:column;gap:12px;align-items:flex-end}
+
+  .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+  .seg{display:flex;background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:4px;gap:2px}
+  .seg button{font-family:'Spline Sans Mono',monospace;font-weight:600;font-size:12.5px;color:var(--muted);background:transparent;border:none;cursor:pointer;padding:7px 13px;border-radius:999px;transition:.18s}
+  .seg button.on{background:var(--ink);color:#11140f}
+  .seg-label{font-family:'Spline Sans Mono',monospace;font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);margin-right:6px;align-self:center}
+
+  .wk{display:flex;align-items:center;gap:6px;background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:4px}
+  .wk button{background:transparent;border:none;color:var(--ink);cursor:pointer;font-size:16px;width:30px;height:30px;border-radius:50%;transition:.15s;display:flex;align-items:center;justify-content:center}
+  .wk button:hover{background:var(--panel-2)}
+  .wk .lbl{font-family:'Spline Sans Mono',monospace;font-size:12.5px;min-width:150px;text-align:center;font-weight:600}
+  .wk input[type=date]{background:var(--panel-2);border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:5px 8px;font-family:'Spline Sans Mono',monospace;font-size:11.5px;color-scheme:dark}
+
+  .btn{display:flex;align-items:center;gap:8px;background:var(--panel);border:1px solid var(--line);color:var(--ink);border-radius:999px;padding:8px 15px;cursor:pointer;font-family:'Spline Sans',sans-serif;font-weight:600;font-size:13px;transition:.15s}
+  .btn:hover{background:var(--panel-2);border-color:#3a443e}
+  .btn .ico{display:inline-block;transition:transform .6s}
+  .btn.spin .ico{animation:spin .8s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .btn[disabled]{opacity:.5;cursor:wait}
+
+  .people{display:flex;gap:8px;flex-wrap:wrap}
+  .chip{display:flex;align-items:center;gap:9px;cursor:pointer;user-select:none;background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:7px 14px 7px 9px;transition:.18s}
+  .chip .dot{width:14px;height:14px;border-radius:50%;flex:none;position:relative}
+  .chip .dot::after{content:"✓";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:9px;color:#11140f;font-weight:700;opacity:0;transition:.18s}
+  .chip.on .dot::after{opacity:1}
+  .chip .nm{font-weight:600;font-size:13.5px}
+  .chip.off{opacity:.45}
+  .chip.off .dot{background:transparent !important;border:1.5px solid var(--muted)}
+
+  .statusbar{display:flex;align-items:center;gap:9px;font-size:12px;color:var(--muted);margin:0 2px 12px}
+  .statusbar .pulse{width:8px;height:8px;border-radius:50%;background:var(--mire);box-shadow:0 0 0 0 rgba(91,185,166,.6)}
+  .statusbar.live .pulse{animation:pulse 2s infinite}
+  .statusbar.stale .pulse{background:var(--rami);animation:none}
+  .statusbar.err .pulse{background:var(--rafa);animation:none}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(91,185,166,.5)}70%{box-shadow:0 0 0 7px rgba(91,185,166,0)}100%{box-shadow:0 0 0 0 rgba(91,185,166,0)}}
+
+  .cal{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;position:relative}
+  .cal-head{display:grid;grid-template-columns:54px repeat(5,1fr);border-bottom:1px solid var(--line)}
+  .cal-head .corner{border-right:1px solid var(--line)}
+  .cal-head .dh{padding:13px 14px;border-right:1px solid var(--line);display:flex;flex-direction:column;gap:2px}
+  .cal-head .dh:last-child{border-right:none}
+  .dh .dow{font-family:'Spline Sans Mono',monospace;font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
+  .dh .dn{font-family:'Bricolage Grotesque',sans-serif;font-weight:600;font-size:18px}
+  .dh.today .dn{color:var(--mire)}
+
+  .cal-body{display:grid;grid-template-columns:54px repeat(5,1fr);position:relative}
+  .axis{position:relative;border-right:1px solid var(--line)}
+  .axis .tick{position:absolute;left:0;right:0;padding-right:7px;text-align:right;transform:translateY(-50%);font-family:'Spline Sans Mono',monospace;font-size:10px;color:var(--muted)}
+  .day{position:relative;border-right:1px solid var(--line)}
+  .day:last-child{border-right:none}
+  .hourline{position:absolute;left:0;right:0;border-top:1px solid var(--line);opacity:.5}
+  .lanes{position:absolute;inset:0;display:flex;gap:3px;padding:0 4px}
+  .lane{position:relative;flex:1}
+  .slot{position:absolute;left:0;right:0;border-radius:8px;padding:5px 7px;overflow:hidden;border:1px solid transparent;transition:transform .12s, filter .12s}
+  .slot:hover{filter:brightness(1.12);transform:translateY(-1px);z-index:5}
+  .slot .st{font-family:'Spline Sans Mono',monospace;font-size:10.5px;font-weight:600;line-height:1.15;white-space:nowrap}
+  .slot .sd{font-size:9.5px;color:var(--muted);margin-top:1px}
+  .slot.rafa{background:var(--rafa-soft);border-color:rgba(232,105,74,.4)} .slot.rafa .st{color:var(--rafa)}
+  .slot.mire{background:var(--mire-soft);border-color:rgba(91,185,166,.4)} .slot.mire .st{color:var(--mire)}
+  .slot.rami{background:var(--rami-soft);border-color:rgba(215,161,59,.4)} .slot.rami .st{color:var(--rami)}
+  .slot.tiny{padding:2px 6px} .slot.tiny .sd{display:none}
+
+  .overlay{position:absolute;inset:0;background:rgba(14,16,15,.74);backdrop-filter:blur(2px);display:none;align-items:center;justify-content:center;z-index:20;flex-direction:column;gap:14px}
+  .overlay.show{display:flex}
+  .overlay .ring{width:34px;height:34px;border:3px solid var(--line);border-top-color:var(--mire);border-radius:50%;animation:spin .8s linear infinite}
+  .overlay .msg{font-family:'Spline Sans Mono',monospace;font-size:12px;color:var(--muted)}
+
+  footer{margin-top:18px;display:flex;flex-wrap:wrap;gap:18px;justify-content:space-between;align-items:center;color:var(--muted);font-size:12px}
+  footer .legend{display:flex;gap:16px;flex-wrap:wrap}
+  footer .lg{display:flex;align-items:center;gap:7px}
+  footer .lg i{width:11px;height:11px;border-radius:3px;display:inline-block}
+  .note{max-width:64ch;line-height:1.5}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <div class="eyebrow">Equipo Handle · GMT-6 · 9:00–18:00</div>
+      <h1>Disponibilidad <span class="dim">en vivo</span></h1>
+      <p class="sub">Huecos libres de Rafa, Mirelle y Ramiro. Cambia de semana, filtra duración y pulsa Actualizar para leer Google Calendar en vivo.</p>
+    </div>
+    <div class="controls">
+      <div class="row">
+        <div class="wk">
+          <button id="prevWk" title="Semana anterior">‹</button>
+          <span class="lbl" id="wkLabel">—</span>
+          <button id="nextWk" title="Semana siguiente">›</button>
+          <input type="date" id="wkPick" title="Saltar a una semana">
+        </div>
+        <button class="btn" id="refresh"><span class="ico">⟳</span><span>Actualizar</span></button>
+      </div>
+      <div class="row">
+        <div class="seg" id="durSeg">
+          <span class="seg-label">Duración</span>
+          <button data-d="30">30</button>
+          <button data-d="45" class="on">45</button>
+          <button data-d="60">60</button>
+          <button data-d="90">90</button>
+        </div>
+        <div class="people" id="people"></div>
+      </div>
+    </div>
+  </header>
+
+  <div class="statusbar" id="status"><span class="pulse"></span><span id="statusText">—</span></div>
+
+  <div class="cal">
+    <div class="cal-head" id="calHead"></div>
+    <div class="cal-body" id="calBody"></div>
+    <div class="overlay" id="overlay"><div class="ring"></div><div class="msg" id="ovMsg">Leyendo Google Calendar…</div></div>
+  </div>
+
+  <footer>
+    <div class="legend">
+      <span class="lg"><i style="background:var(--rafa)"></i>Rafa</span>
+      <span class="lg"><i style="background:var(--mire)"></i>Mirelle</span>
+      <span class="lg"><i style="background:var(--rami)"></i>Ramiro</span>
+    </div>
+    <div class="note">Ocupado = cualquier evento en el calendario (incl. comida); los eventos rechazados cuentan como libres. Pulsa Actualizar para leer la disponibilidad en vivo desde Google Calendar a través de tu backend en Vercel.</div>
+  </footer>
+</div>
+
+<script>
+const META = { Rafa:{cls:"rafa",color:"var(--rafa)"}, Mirelle:{cls:"mire",color:"var(--mire)"}, Ramiro:{cls:"rami",color:"var(--rami)"} };
+
+// El index.html vive en el MISMO proyecto de Vercel → mismo origen, deja "".
+// Si algún día sirves el front-end en otro dominio, pon aquí "https://growth-calendar-avaiability.vercel.app".
+const BACKEND = "";
+
+const WIN_S = 9*60, WIN_E = 18*60;        // 9:00 – 18:00
+const PX_PER_MIN = 1.12;
+const GRID_H = (WIN_E-WIN_S)*PX_PER_MIN;
+
+/* Datos iniciales (semana 1–5 jun 2026) para que la app no arranque vacía.
+   Intervalos OCUPADOS dentro de 9:00–18:00. Pulsa Actualizar para refrescar
+   en vivo desde Google Calendar; eso sobreescribe estos datos. */
+const SEED = {
+  "2026-06-01": {
+    Rafa:[["2026-06-01","09:00","09:15"],["2026-06-01","09:00","10:00"],["2026-06-01","09:45","10:00"],["2026-06-01","10:00","11:00"],["2026-06-01","10:00","10:30"],["2026-06-01","11:00","11:30"],["2026-06-01","11:00","12:00"],["2026-06-01","12:00","12:30"],["2026-06-01","12:30","13:00"],["2026-06-01","13:00","13:30"],["2026-06-01","13:30","14:00"],["2026-06-01","14:00","15:00"],["2026-06-01","15:00","15:45"],["2026-06-01","16:00","16:45"],["2026-06-01","17:15","17:45"],["2026-06-01","17:45","18:15"],["2026-06-02","10:00","10:45"],["2026-06-02","10:00","11:00"],["2026-06-02","11:00","12:00"],["2026-06-02","12:00","12:50"],["2026-06-02","13:00","14:00"],["2026-06-02","14:00","15:00"],["2026-06-02","14:45","15:15"],["2026-06-02","15:00","15:45"],["2026-06-02","16:30","17:15"],["2026-06-02","17:45","18:15"],["2026-06-03","09:00","09:45"],["2026-06-03","10:00","11:00"],["2026-06-03","11:00","11:50"],["2026-06-03","12:00","12:30"],["2026-06-03","12:00","12:45"],["2026-06-03","12:45","13:00"],["2026-06-03","13:00","13:45"],["2026-06-03","14:00","15:00"],["2026-06-03","17:45","18:15"],["2026-06-04","10:00","11:00"],["2026-06-04","11:00","12:00"],["2026-06-04","12:00","12:50"],["2026-06-04","14:00","15:00"],["2026-06-04","17:45","18:15"],["2026-06-05","10:00","11:00"],["2026-06-05","10:00","10:30"],["2026-06-05","11:00","11:50"],["2026-06-05","14:00","15:00"],["2026-06-05","14:00","14:30"],["2026-06-05","17:00","17:30"],["2026-06-05","17:45","18:15"]],
+    Mirelle:[["2026-06-01","09:00","10:00"],["2026-06-01","10:00","10:45"],["2026-06-01","11:00","11:45"],["2026-06-01","12:00","12:45"],["2026-06-01","12:45","13:45"],["2026-06-01","13:30","14:00"],["2026-06-01","14:00","14:45"],["2026-06-01","15:00","15:45"],["2026-06-01","15:45","16:30"],["2026-06-01","17:45","18:15"],["2026-06-02","09:00","09:30"],["2026-06-02","09:30","10:00"],["2026-06-02","10:00","10:45"],["2026-06-02","11:00","11:45"],["2026-06-02","12:00","12:45"],["2026-06-02","13:00","14:00"],["2026-06-02","14:00","14:45"],["2026-06-02","14:45","15:15"],["2026-06-02","16:00","16:45"],["2026-06-02","17:45","18:15"],["2026-06-03","10:00","10:45"],["2026-06-03","11:00","11:45"],["2026-06-03","12:00","12:30"],["2026-06-03","12:00","12:45"],["2026-06-03","13:00","14:00"],["2026-06-03","14:00","14:45"],["2026-06-03","16:00","16:45"],["2026-06-03","17:45","18:15"],["2026-06-04","08:30","09:15"],["2026-06-04","11:00","11:45"],["2026-06-04","13:00","14:00"],["2026-06-04","14:00","14:45"],["2026-06-04","16:00","19:00"],["2026-06-04","17:45","18:15"],["2026-06-05","10:00","10:30"],["2026-06-05","12:00","12:45"],["2026-06-05","13:00","14:00"],["2026-06-05","14:00","14:45"],["2026-06-05","14:00","14:30"],["2026-06-05","17:00","17:30"],["2026-06-05","17:45","18:15"]],
+    Ramiro:[["2026-06-01","09:00","10:00"],["2026-06-01","10:00","10:30"],["2026-06-01","11:00","11:45"],["2026-06-01","12:00","12:45"],["2026-06-01","13:00","13:30"],["2026-06-01","13:30","14:15"],["2026-06-01","14:00","15:00"],["2026-06-01","14:45","15:00"],["2026-06-01","15:00","15:30"],["2026-06-01","16:00","16:45"],["2026-06-01","17:45","18:15"],["2026-06-02","10:00","10:30"],["2026-06-02","11:00","11:45"],["2026-06-02","12:30","13:15"],["2026-06-02","14:00","14:30"],["2026-06-02","14:45","15:15"],["2026-06-02","15:00","15:30"],["2026-06-02","16:00","16:45"],["2026-06-02","17:45","18:15"],["2026-06-03","09:00","09:30"],["2026-06-03","09:00","09:45"],["2026-06-03","10:00","10:30"],["2026-06-03","10:00","10:45"],["2026-06-03","11:00","11:45"],["2026-06-03","12:00","12:45"],["2026-06-03","15:00","15:30"],["2026-06-03","17:00","17:45"],["2026-06-03","17:45","18:15"],["2026-06-04","10:00","10:30"],["2026-06-04","15:00","15:30"],["2026-06-04","17:45","18:15"],["2026-06-05","10:00","10:30"],["2026-06-05","14:00","14:30"],["2026-06-05","15:00","15:30"],["2026-06-05","17:00","17:30"],["2026-06-05","17:45","18:15"]]
+  }
+};
+
+const cache = Object.assign({}, SEED);          // mondayISO -> {Rafa:[...],Mirelle:[...],Ramiro:[...]}
+const fetchedLive = {};                          // mondayISO -> true si se leyó en vivo
+const state = { dur:45, active:{Rafa:true,Mirelle:true,Ramiro:true}, monday:"2026-06-01" };
+
+/* ---------- date helpers ---------- */
+function isoToDate(iso){const [y,m,d]=iso.split("-").map(Number);return new Date(y,m-1,d);}
+function dateToISO(dt){return `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,"0")}-${String(dt.getDate()).padStart(2,"0")}`;}
+function mondayOf(dt){const d=new Date(dt);const wd=(d.getDay()+6)%7;d.setDate(d.getDate()-wd);d.setHours(0,0,0,0);return d;}
+function addDays(dt,n){const d=new Date(dt);d.setDate(d.getDate()+n);return d;}
+const MES=["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
+function weekDays(monISO){
+  const mon=isoToDate(monISO);
+  const dow=["Lun","Mar","Mié","Jue","Vie"];
+  return [0,1,2,3,4].map(i=>{const d=addDays(mon,i);return {key:dateToISO(d),dow:dow[i],dn:d.getDate(),mes:MES[d.getMonth()]};});
+}
+function weekLabel(monISO){
+  const days=weekDays(monISO);const a=days[0],b=days[4];
+  return a.mes===b.mes ? `${a.dn}–${b.dn} ${a.mes} ${isoToDate(monISO).getFullYear()}` : `${a.dn} ${a.mes} – ${b.dn} ${b.mes}`;
+}
+
+const toMin=s=>{const[h,m]=s.split(":").map(Number);return h*60+m;};
+const fmt=m=>`${String(Math.floor(m/60)).padStart(2,"0")}:${String(m%60).padStart(2,"0")}`;
+
+function freeBlocks(person, dayKey, minDur){
+  const data=cache[state.monday]; if(!data||!data[person]) return [];
+  let ivs=data[person].filter(e=>e[0]===dayKey).map(e=>[Math.max(toMin(e[1]),WIN_S),Math.min(toMin(e[2]),WIN_E)]).filter(([a,b])=>a<b).sort((p,q)=>p[0]-q[0]);
+  let merged=[];
+  for(const [a,b] of ivs){ if(merged.length&&a<=merged[merged.length-1][1]) merged[merged.length-1][1]=Math.max(merged[merged.length-1][1],b); else merged.push([a,b]); }
+  let free=[],cur=WIN_S;
+  for(const [a,b] of merged){ if(a-cur>=minDur) free.push([cur,a]); cur=Math.max(cur,b); }
+  if(WIN_E-cur>=minDur) free.push([cur,WIN_E]);
+  return free;
+}
+
+/* ---------- LECTURA EN VIVO vía tu backend de Vercel (OAuth + Google Calendar) ---------- */
+async function refresh(){
+  const mon = state.monday;
+  setLoading(true, "Consultando Google Calendar…");
+  setBtnSpin(true);
+  try {
+    const r = await fetch(`${BACKEND}/api/availability?monday=${mon}`);
+    const data = await r.json();
+    if (!r.ok || data.error) throw new Error(data.error || ("HTTP " + r.status));
+    cache[mon] = {
+      Rafa: data.Rafa || [],
+      Mirelle: data.Mirelle || [],
+      Ramiro: data.Ramiro || [],
+    };
+    fetchedLive[mon] = true;
+    const errs = Object.keys(data).filter(k => k.endsWith("_error"));
+    if (errs.length) {
+      setStatus("stale", "Datos en vivo · sin acceso a: " + errs.map(k => k.replace("_error","")).join(", "));
+    } else {
+      setStatus("live", "Datos en vivo · " +
+        new Date().toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" }));
+    }
+  } catch (e) {
+    setStatus("err", "No se pudo actualizar: " + e.message);
+  } finally {
+    setLoading(false); setBtnSpin(false); render();
+  }
+}
+
+/* ---------- UI chrome ---------- */
+function setLoading(on,msg){const o=document.getElementById("overlay");o.classList.toggle("show",on);if(msg)document.getElementById("ovMsg").textContent=msg;}
+function setBtnSpin(on){const b=document.getElementById("refresh");b.classList.toggle("spin",on);b.disabled=on;}
+function setStatus(kind,text){const s=document.getElementById("status");s.className="statusbar "+kind;document.getElementById("statusText").textContent=text;}
+function updateStatusForWeek(){
+  if(fetchedLive[state.monday]) return;
+  if(cache[state.monday]) setStatus("stale","Datos iniciales del 1–5 jun · pulsa Actualizar para leer en vivo");
+  else setStatus("stale","Sin datos cargados · pulsa Actualizar para leer Google Calendar en vivo");
+}
+
+function buildChips(){
+  const wrap=document.getElementById("people");wrap.innerHTML="";
+  for(const p of Object.keys(META)){
+    const c=document.createElement("div");
+    c.className="chip "+(state.active[p]?"on":"off");
+    c.innerHTML=`<span class="dot" style="background:${META[p].color}"></span><span class="nm">${p}</span>`;
+    c.onclick=()=>{state.active[p]=!state.active[p];buildChips();render();};
+    wrap.appendChild(c);
+  }
+}
+function buildHead(){
+  const h=document.getElementById("calHead");h.innerHTML=`<div class="corner"></div>`;
+  for(const d of weekDays(state.monday)) h.innerHTML+=`<div class="dh"><span class="dow">${d.dow}</span><span class="dn">${d.dn} ${d.mes}</span></div>`;
+  document.getElementById("wkLabel").textContent=weekLabel(state.monday);
+}
+function render(){
+  const body=document.getElementById("calBody");body.innerHTML="";body.style.height=GRID_H+"px";
+  const axis=document.createElement("div");axis.className="axis";
+  for(let h=9;h<=18;h++){const t=document.createElement("div");t.className="tick";t.style.top=((h*60-WIN_S)*PX_PER_MIN)+"px";t.textContent=`${String(h).padStart(2,"0")}:00`;axis.appendChild(t);}
+  body.appendChild(axis);
+  const active=Object.keys(META).filter(p=>state.active[p]);
+  for(const d of weekDays(state.monday)){
+    const col=document.createElement("div");col.className="day";
+    for(let h=9;h<=18;h++){const ln=document.createElement("div");ln.className="hourline";ln.style.top=((h*60-WIN_S)*PX_PER_MIN)+"px";col.appendChild(ln);}
+    const lanes=document.createElement("div");lanes.className="lanes";
+    for(const p of active){
+      const lane=document.createElement("div");lane.className="lane";
+      for(const [a,b] of freeBlocks(p,d.key,state.dur)){
+        const dur=b-a;const s=document.createElement("div");
+        s.className="slot "+META[p].cls+(dur<=35?" tiny":"");
+        s.style.top=((a-WIN_S)*PX_PER_MIN)+"px";s.style.height=(dur*PX_PER_MIN-3)+"px";
+        s.innerHTML=`<div class="st">${fmt(a)}–${fmt(b)}</div><div class="sd">${p} · ${dur} min</div>`;
+        s.title=`${p} libre · ${fmt(a)}–${fmt(b)} (${dur} min)`;
+        lane.appendChild(s);
+      }
+      lanes.appendChild(lane);
+    }
+    col.appendChild(lanes);body.appendChild(col);
+  }
+}
+
+function gotoWeek(monISO){state.monday=monISO;document.getElementById("wkPick").value=monISO;buildHead();render();updateStatusForWeek();}
+
+/* events */
+document.getElementById("durSeg").addEventListener("click",e=>{const b=e.target.closest("button[data-d]");if(!b)return;state.dur=+b.dataset.d;[...document.querySelectorAll("#durSeg button")].forEach(x=>x.classList.toggle("on",x===b));render();});
+document.getElementById("prevWk").onclick=()=>gotoWeek(dateToISO(addDays(isoToDate(state.monday),-7)));
+document.getElementById("nextWk").onclick=()=>gotoWeek(dateToISO(addDays(isoToDate(state.monday),7)));
+document.getElementById("wkPick").onchange=e=>{ if(!e.target.value) return; gotoWeek(dateToISO(mondayOf(isoToDate(e.target.value)))); };
+document.getElementById("refresh").onclick=refresh;
+
+/* init */
+buildChips();buildHead();render();
+document.getElementById("wkPick").value=state.monday;
+updateStatusForWeek();
+</script>
+</body>
+</html>
